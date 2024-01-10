@@ -9,8 +9,6 @@ export async function handleRequest(request: Request) {
     }
     const targetUrl = new URL(process.env.NOTION_BASE_URL! + pathname);
 
-    console.log(targetUrl.toString());
-
     if (["/v1", "/api/v1"].includes(url.pathname)) {
       return new Response(`
           Usage:\n

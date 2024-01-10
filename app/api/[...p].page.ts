@@ -10,6 +10,13 @@ async function handleRequest(request: Request) {
       process.env.NOTION_BASE_URL! + url.pathname + url.search
     );
 
+    if (["/v1", "/api/v1"].includes(url.pathname)) {
+      return new Response(`
+        Usage:\n
+          ${url.origin}/<url>
+      `);
+    }
+
     if (url.pathname.startsWith("/api/v1/oauth/authorize")) {
       return NextResponse.redirect(targetUrl, 302);
     }

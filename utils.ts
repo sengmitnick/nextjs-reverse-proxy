@@ -8,9 +8,11 @@ export async function handleRequest(request: Request) {
     if (url.pathname.startsWith("/api/v1")) {
       pathname = pathname.replace("/api", "");
     }
-    const targetUrl = new URL(
-      process.env.NOTION_BASE_URL! + pathname + url.searchParams.toString()
-    );
+    let s = url.searchParams.toString();
+    if (s) s = "?" + s;
+    const targetUrl = new URL(process.env.NOTION_BASE_URL! + pathname + s);
+
+    console.log(targetUrl.toString());
 
     if (["/v1", "/api/v1"].includes(url.pathname)) {
       return new Response(`

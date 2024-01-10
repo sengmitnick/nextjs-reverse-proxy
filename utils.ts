@@ -38,6 +38,7 @@ export async function handleRequest(request: Request) {
       method: request.method,
       headers: {
         accept: "application/json",
+        "content-type": "application/json",
         "Notion-Version": process.env.NOTION_VERSION!,
         Authorization: request.headers.get("Authorization")!,
       },

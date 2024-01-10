@@ -30,16 +30,18 @@ export async function handleRequest(request: Request) {
       });
     }
 
-    const requestHeaders = new Headers(request.headers);
-    requestHeaders.set("Notion-Version", process.env.NOTION_VERSION!);
-
     let response = await fetch(targetUrl, {
-      method: request.method,
-      headers: requestHeaders,
+      method: "GET",
+      headers: {
+        accept: "application/json",
+        "Notion-Version": process.env.NOTION_VERSION!,
+        Authorization: request.headers.get("Authorization")!,
+      },
       redirect: "follow",
       body: request.body,
     });
-    response = new Response(response.body, response);
+
+    response = NextResponse.json(await response.json());
     response.headers.set("Access-Control-Allow-Origin", "*");
     response.headers.set(
       "Access-Control-Allow-Methods",

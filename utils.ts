@@ -3,11 +3,14 @@ import { NextResponse } from "next/server";
 export async function handleRequest(request: Request) {
   try {
     const url = new URL(request.url);
+    url.searchParams.delete("slug");
     let pathname = url.pathname;
     if (url.pathname.startsWith("/api/v1")) {
       pathname = pathname.replace("/api", "");
     }
-    const targetUrl = new URL(process.env.NOTION_BASE_URL! + pathname);
+    const targetUrl = new URL(
+      process.env.NOTION_BASE_URL! + pathname + url.searchParams.toString()
+    );
 
     if (["/v1", "/api/v1"].includes(url.pathname)) {
       return new Response(`

@@ -16,7 +16,7 @@ export async function handleRequest(request: Request) {
         `);
     }
 
-    if (url.pathname.startsWith("/api/v1/oauth/authorize")) {
+    if (pathname.startsWith("/v1/oauth/authorize")) {
       return NextResponse.redirect(targetUrl, 302);
     }
 

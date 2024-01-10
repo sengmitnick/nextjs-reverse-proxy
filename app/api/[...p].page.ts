@@ -6,31 +6,11 @@ export const dynamic = "force-dynamic"; // defaults to auto
 async function handleRequest(request: Request) {
   try {
     const url = new URL(request.url);
-
-    if (url.pathname.startsWith("/api/v1/")) {
-      // Extract the target URL from the path
-      let targetUrl = url.pathname.slice(8);
-
-      // Preserve query parameters
-      if (url.search) {
-        targetUrl += url.search;
-      }
-
-      // Redirect to the specified URL
-      return Response.redirect(targetUrl, 302);
-    }
-
-    if (["/", "/api", "/api/"].includes(url.pathname)) {
-      return new Response(`
-        Usage:\n
-          ${url.origin}/<url>
-      `);
-    }
+    const targetUrl = new URL(
+      process.env.NOTION_BASE_URL! + url.pathname + url.search
+    );
 
     if (url.pathname.startsWith("/api/v1/oauth/authorize")) {
-      let targetUrl = new URL(
-        process.env.NOTION_BASE_URL! + url.pathname + url.search
-      );
       return NextResponse.redirect(targetUrl, 302);
     }
 
@@ -46,20 +26,12 @@ async function handleRequest(request: Request) {
       });
     }
 
-    const headers = new Headers(request.headers);
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set("Notion-Version", process.env.NOTION_VERSION!);
 
-    if (
-      "api.notion.com" ===
-        new URL(request.url.slice(url.origin.length + 1)).hostname &&
-      !headers.has("Notion-Version")
-    ) {
-      const notionVersion = process.env.NOTION_VERSION || "2021-05-13";
-      headers.set("Notion-Version", notionVersion);
-    }
-
-    let response = await fetch(request.url.slice(url.origin.length + 1), {
+    let response = await fetch(targetUrl, {
       method: request.method,
-      headers: headers,
+      headers: requestHeaders,
       redirect: "follow",
       body: request.body,
     });
@@ -74,7 +46,11 @@ async function handleRequest(request: Request) {
       "Origin, X-Requested-With, Accept, Authorization, Content-Type, Notion-Version"
     );
 
-    return response;
+    return NextResponse.rewrite(targetUrl, {
+      request: {
+        headers: requestHeaders,
+      },
+    });
   } catch (e: any) {
     return new Response(e.stack || e, { status: 500 });
   }

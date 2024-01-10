@@ -35,7 +35,7 @@ export async function handleRequest(request: Request) {
     }
 
     let response = await fetch(targetUrl, {
-      method: "GET",
+      method: request.method,
       headers: {
         accept: "application/json",
         "Notion-Version": process.env.NOTION_VERSION!,

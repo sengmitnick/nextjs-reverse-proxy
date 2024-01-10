@@ -1,3 +1,5 @@
+import { NextResponse } from "next/server";
+
 export const runtime = "edge";
 export const dynamic = "force-dynamic"; // defaults to auto
 
@@ -5,9 +7,9 @@ async function handleRequest(request: Request) {
   try {
     const url = new URL(request.url);
 
-    if (url.pathname.startsWith("/v1/")) {
+    if (url.pathname.startsWith("/api/v1/")) {
       // Extract the target URL from the path
-      let targetUrl = url.pathname.slice(10);
+      let targetUrl = url.pathname.slice(8);
 
       // Preserve query parameters
       if (url.search) {
@@ -18,11 +20,18 @@ async function handleRequest(request: Request) {
       return Response.redirect(targetUrl, 302);
     }
 
-    if (url.pathname === "/") {
+    if (["/", "/api", "/api/"].includes(url.pathname)) {
       return new Response(`
         Usage:\n
           ${url.origin}/<url>
       `);
+    }
+
+    if (url.pathname.startsWith("/api/v1/oauth/authorize")) {
+      let targetUrl = new URL(
+        process.env.NOTION_BASE_URL! + url.pathname + url.search
+      );
+      return NextResponse.redirect(targetUrl, 302);
     }
 
     if (request.method === "OPTIONS") {
@@ -44,7 +53,7 @@ async function handleRequest(request: Request) {
         new URL(request.url.slice(url.origin.length + 1)).hostname &&
       !headers.has("Notion-Version")
     ) {
-      const notionVersion = "2021-05-13";
+      const notionVersion = process.env.NOTION_VERSION || "2021-05-13";
       headers.set("Notion-Version", notionVersion);
     }
 
